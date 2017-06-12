@@ -350,3 +350,8 @@ func (t *TestWorkflowEnvironment) RegisterDelayedCallback(callback func(), delay
 func (t *TestWorkflowEnvironment) SetActivityTaskList(tasklist string, activityFn ...interface{}) {
 	t.impl.setActivityTaskList(tasklist, activityFn...)
 }
+
+// OnPanic - sets an handler for workflow panic.
+func (t *TestWorkflowEnvironment) OnPanicHandler(f func(err error)) {
+	t.impl.onPanicHandler(f)
+}

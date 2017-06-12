@@ -170,14 +170,12 @@ func TestWorkflowPanic(t *testing.T) {
 	ts.SetLogger(zap.NewNop()) // this test simulate panic, use nop logger to avoid logging noise
 	ts.RegisterActivity(testAct)
 	env := ts.NewTestWorkflowEnvironment()
+	var workflowErr error
+	env.OnPanicHandler(func(err error) {
+		workflowErr = err
+	})
 	env.ExecuteWorkflow(splitJoinActivityWorkflow, true)
-	require.True(t, env.IsWorkflowCompleted())
-	require.NotNil(t, env.GetWorkflowError())
-	resultErr := env.GetWorkflowError().(ErrorWithDetails)
-	require.EqualValues(t, "simulated", resultErr.Reason())
-	var details []byte
-	resultErr.Details(&details)
-	require.Contains(t, string(details), "cadence.splitJoinActivityWorkflow")
+	require.Contains(t, workflowErr.Error(), "cadence.splitJoinActivityWorkflow")
 }
 
 func testClockWorkflow(ctx Context) (time.Time, error) {

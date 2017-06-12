@@ -136,6 +136,7 @@ type (
 		isTestCompleted bool
 		testResult      EncodedValue
 		testError       error
+		panicHandler    func(err error)
 	}
 )
 
@@ -407,7 +408,12 @@ func (env *testWorkflowEnvironmentImpl) startMainLoop() {
 					// check workflow stack for more details.
 					panicMsg := fmt.Sprintf("test timeout: %v, workflow stack: %v",
 						env.testTimeout, env.workflowDef.StackTrace())
-					panic(panicMsg)
+					if env.panicHandler != nil {
+						env.panicHandler(errors.New(panicMsg))
+						return
+					} else {
+						panic(panicMsg)
+					}
 				}
 			}
 		}
@@ -981,6 +987,10 @@ func (env *testWorkflowEnvironmentImpl) nextID() int {
 	activityID := env.counterID
 	env.counterID++
 	return activityID
+}
+
+func (env *testWorkflowEnvironmentImpl) onPanicHandler(f func(err error)) {
+	env.panicHandler = f
 }
 
 func getStringID(intID int) string {

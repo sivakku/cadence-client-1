@@ -427,7 +427,9 @@ func executeDispatcher(ctx Context, dispatcher dispatcher) {
 			zap.String("PanicError", panicErr.Error()),
 			zap.String("PanicStack", panicErr.StackTrace()))
 		checkUnhandledSigFn(ctx)
-		env.Complete(nil, NewErrorWithDetails(panicErr.Error(), []byte(panicErr.StackTrace())))
+		// Timeout the Decision instead of failing workflow.
+		// TODO: Pump this stack trace on to history for debuggability by exposing decision type fail
+		// to client.
 		return
 	}
 	rp := *getWorkflowResultPointerPointer(ctx)
